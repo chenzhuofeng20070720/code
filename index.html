@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>真正3D渐变立方体（蓝→红渐变）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>快乐的小车 | 纯CSS行驶动画</title>
     <style>
         * {
             margin: 0;
@@ -10,62 +11,468 @@
             box-sizing: border-box;
         }
 
-        /* 3D视窗容器 */
-        .scene {
-            width: 100vw;
-            height: 100vh;
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a5f7a 0%, #0d3e52 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1a1a1a;
-            /* 开启真实3D透视 */
-            perspective: 1000px;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
+            overflow: hidden;
         }
 
-        /* 立方体本体 */
-        .cube {
-            width: 220px;
-            height: 220px;
-            /* 关键：真正3D空间 */
-            transform-style: preserve-3d;
-            /* 自动旋转动画 */
-            animation: rotate 8s linear infinite;
+        /* 动画场景容器 */
+        .scene {
+            position: relative;
+            width: 1000px;
+            height: 500px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 65%, #6B8E23 65%, #4E6B2C 100%);
+            border-radius: 24px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
 
-        /* 立方体6个面公共样式 */
-        .face {
+        .scene:hover {
+            transform: scale(1.01);
+        }
+
+        /* ========= 太阳 ========= */
+        .sun {
             position: absolute;
-            width: 220px;
-            height: 220px;
-            border: 1px solid rgba(255,255,255,0.2);
-            opacity: 0.9;
+            top: 40px;
+            right: 60px;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #FFD966, #FFB347);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 200, 100, 0.8);
+            animation: sunGlow 4s infinite alternate;
+            z-index: 2;
         }
 
-        /* 6个面 统一使用 蓝色 → 红色 渐变 */
-        .front  { transform: rotateY(0deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
-        .back   { transform: rotateY(180deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
-        .left   { transform: rotateY(-90deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
-        .right  { transform: rotateY(90deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
-        .top    { transform: rotateX(90deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
-        .bottom { transform: rotateX(-90deg) translateZ(110px); background: linear-gradient(135deg, #007bff, #ff3333); }
+        /* 太阳光芒 (伪元素) */
+        .sun::before,
+        .sun::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 200, 100, 0.4), transparent);
+            transform: translate(-50%, -50%) scale(1.2);
+            animation: sunRay 3s infinite alternate;
+        }
+        .sun::after {
+            animation-delay: 0.5s;
+            transform: translate(-50%, -50%) scale(1.4);
+        }
 
-        /* 3D旋转动画 */
-        @keyframes rotate {
-            0%   { transform: rotateX(0deg) rotateY(0deg); }
-            100% { transform: rotateX(360deg) rotateY(360deg); }
+        /* ========= 云朵 ========= */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 80% 20% 70% 30% / 60% 50% 50% 40%;
+            filter: blur(2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            animation: cloudFloat 12s infinite alternate ease-in-out;
+        }
+
+        .cloud1 {
+            width: 100px;
+            height: 60px;
+            top: 30px;
+            left: 80px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%;
+            animation-duration: 14s;
+        }
+        .cloud1::before,
+        .cloud1::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+        .cloud1::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 15px;
+        }
+        .cloud1::after {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 45px;
+        }
+
+        .cloud2 {
+            width: 130px;
+            height: 75px;
+            top: 80px;
+            right: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 70% 30% 60% 40% / 40% 55% 45% 60%;
+            animation-duration: 16s;
+            animation-delay: -2s;
+        }
+        .cloud2::before,
+        .cloud2::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+        .cloud2::before {
+            width: 55px;
+            height: 55px;
+            top: -28px;
+            left: 20px;
+        }
+        .cloud2::after {
+            width: 70px;
+            height: 70px;
+            top: -35px;
+            left: 55px;
+        }
+
+        /* ========= 道路 ========= */
+        .road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 130px;
+            background: #2C2C2C;
+            box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.3), 0 -2px 0 #4A4A4A;
+            z-index: 5;
+        }
+
+        /* 道路标线 (车道分隔线) */
+        .road-lines {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #FFD966, #FFD966 40px, transparent 40px, transparent 80px);
+            transform: translateY(-50%);
+            z-index: 6;
+            pointer-events: none;
+            animation: moveLines 0.6s linear infinite;
+        }
+
+        /* 路沿 (白色边线) */
+        .road-edge {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: #E0E0E0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .road-edge.bottom {
+            top: auto;
+            bottom: 0;
+        }
+
+        /* 小草地装饰 */
+        .grass {
+            position: absolute;
+            bottom: 130px;
+            width: 100%;
+            height: 20px;
+            background: repeating-linear-gradient(90deg, #5A8F2C, #5A8F2C 20px, #6A9E3C 20px, #6A9E3C 40px);
+            z-index: 4;
+        }
+
+        /* ========= 小汽车 (纯CSS绘制) ========= */
+        .car {
+            position: absolute;
+            bottom: 140px;
+            left: -180px;  /* 从左侧外开始，动画让它向右移动 */
+            width: 160px;
+            height: 70px;
+            z-index: 10;
+            animation: drive 8s linear infinite;
+            filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        /* 车身主体 */
+        .car-body {
+            position: absolute;
+            width: 100%;
+            height: 45px;
+            background: linear-gradient(135deg, #E34234, #B22222);
+            bottom: 0;
+            border-radius: 20px 20px 12px 12px;
+            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 车顶 */
+        .car-roof {
+            position: absolute;
+            width: 80px;
+            height: 38px;
+            background: #2C2C2C;
+            top: -28px;
+            left: 30px;
+            border-radius: 25px 25px 12px 12px;
+            box-shadow: inset 0 -2px 0 #444, 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 车窗 */
+        .window {
+            position: absolute;
+            width: 28px;
+            height: 22px;
+            background: #7EC8FF;
+            border-radius: 8px 8px 4px 4px;
+            top: -20px;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+        .window-left {
+            left: 38px;
+        }
+        .window-right {
+            right: 38px;
+        }
+
+        /* 车灯 */
+        .headlight {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #FFE484;
+            border-radius: 50%;
+            top: 18px;
+            right: 8px;
+            box-shadow: 0 0 6px #FFB347;
+        }
+        .taillight {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #FF4D4D;
+            border-radius: 50%;
+            top: 18px;
+            left: 8px;
+            box-shadow: 0 0 4px #FF0000;
+        }
+
+        /* 车轮 */
+        .wheel {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #1A1A1A;
+            border-radius: 50%;
+            bottom: -8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 2px #555;
+            animation: wheelRotate 0.8s linear infinite;
+        }
+        .wheel::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .wheel-front {
+            right: 12px;
+        }
+        .wheel-rear {
+            left: 12px;
+        }
+
+        /* 排气管 (小细节) */
+        .exhaust {
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            background: #555;
+            bottom: 8px;
+            right: -5px;
+            border-radius: 2px;
+        }
+
+        /* 动画：小车从左向右行驶 */
+        @keyframes drive {
+            0% {
+                left: -180px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* 车轮旋转动画 */
+        @keyframes wheelRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 道路标线移动 (营造车动感) */
+        @keyframes moveLines {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 80px 0;
+            }
+        }
+
+        /* 云朵缓慢飘移 */
+        @keyframes cloudFloat {
+            0% {
+                transform: translateX(-15px);
+            }
+            100% {
+                transform: translateX(25px);
+            }
+        }
+
+        /* 太阳光芒脉冲 */
+        @keyframes sunGlow {
+            0% {
+                box-shadow: 0 0 10px rgba(255, 200, 100, 0.6);
+                transform: scale(1);
+            }
+            100% {
+                box-shadow: 0 0 35px rgba(255, 200, 100, 1);
+                transform: scale(1.05);
+            }
+        }
+        @keyframes sunRay {
+            0% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0.7;
+                transform: translate(-50%, -50%) scale(1.6);
+            }
+        }
+
+        /* 简单说明卡片 */
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            width: fit-content;
+            margin: 0 auto;
+            pointer-events: none;
+            font-weight: 500;
+            font-family: monospace;
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* 响应式 */
+        @media (max-width: 700px) {
+            .scene {
+                width: 95vw;
+                height: 300px;
+            }
+            .car {
+                width: 120px;
+                height: 55px;
+            }
+            .car-body {
+                height: 35px;
+            }
+            .car-roof {
+                width: 65px;
+                height: 30px;
+                top: -22px;
+                left: 25px;
+            }
+            .window {
+                width: 22px;
+                height: 18px;
+                top: -16px;
+            }
+            .window-left { left: 28px; }
+            .window-right { right: 28px; }
+            .wheel {
+                width: 16px;
+                height: 16px;
+                bottom: -6px;
+            }
+            .headlight, .taillight {
+                width: 8px;
+                height: 8px;
+                top: 14px;
+            }
+            .road {
+                height: 100px;
+            }
+            .grass {
+                bottom: 100px;
+            }
+            .sun {
+                width: 50px;
+                height: 50px;
+                top: 20px;
+                right: 30px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="scene">
-        <div class="cube">
-            <div class="face front"></div>
-            <div class="face back"></div>
-            <div class="face left"></div>
-            <div class="face right"></div>
-            <div class="face top"></div>
-            <div class="face bottom"></div>
-        </div>
+<div class="scene">
+    <!-- 太阳 -->
+    <div class="sun"></div>
+    <!-- 云朵 -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    
+    <!-- 草地边缘 -->
+    <div class="grass"></div>
+    
+    <!-- 道路区域 -->
+    <div class="road">
+        <div class="road-edge"></div>
+        <div class="road-lines"></div>
+        <div class="road-edge bottom"></div>
     </div>
+    
+    <!-- 小汽车 (纯CSS，带行驶动画) -->
+    <div class="car">
+        <div class="car-body">
+            <div class="headlight"></div>
+            <div class="taillight"></div>
+            <div class="exhaust"></div>
+        </div>
+        <div class="car-roof">
+            <div class="window window-left"></div>
+            <div class="window window-right"></div>
+        </div>
+        <div class="wheel wheel-front"></div>
+        <div class="wheel wheel-rear"></div>
+    </div>
+</div>
+<div class="info">
+    🚗 快乐小车 | 从左向右无限行驶 | 车轮旋转 + 道路标线移动 + 云朵飘浮 ☁️
+</div>
 </body>
 </html>
