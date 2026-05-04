@@ -1,162 +1,1289 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二次方程求解器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🏯 Tower of Hanoi · 3D Learning Game</title>
     <style>
+        :root {
+            --bg-top: #e0eafc;
+            --bg-bottom: #cfdef3;
+            --peg-wood-light: #d4a574;
+            --peg-wood-mid: #b8733b;
+            --peg-wood-dark: #6b3a2a;
+            --peg-wood-highlight: #e8c9a0;
+            --rod-light: #c9a882;
+            --rod-mid: #a07848;
+            --rod-dark: #5c3a20;
+            --base-ellipse-light: #d4b896;
+            --base-ellipse-dark: #8b6340;
+            --warning-bg: #fff3e0;
+            --warning-border: #f39c12;
+            --victory-gold: #f0c040;
+            --card-bg: #fefefe;
+            --text-dark: #1a2c3e;
+            --text-mid: #2c3e66;
+            --accent: #f39c12;
+            --accent-deep: #1e3c72;
+            --shadow-soft: rgba(0, 0, 0, 0.06);
+            --shadow-md: rgba(0, 0, 0, 0.18);
+            --shadow-lg: rgba(0, 0, 0, 0.35);
+            --disk-height: 24px;
+            --base-height: 22px;
+            --rod-height: 260px;
+            --rod-width: 14px;
+            --peg-width: 200px;
+            --game-perspective: 900px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background: #f5f5f5;
-            color: #333;
+            background: linear-gradient(160deg, #dce8fa 0%, #c5d5f0 25%, #e2eafc 50%, #cfdef3 75%, #bccde8 100%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 1.5rem 1rem;
+            line-height: 1.5;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+        /* ── Main Container ── */
+        .app-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 2rem 1.8rem 2.5rem;
+            transition: all var(--transition-fast);
         }
-        h1 {
-            margin-top: 0;
-            color: #2c3e50;
+
+        /* ── Header ── */
+        .game-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
-        .result {
-            background: #e8f4fd;
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: monospace;
-            margin: 1rem 0;
+
+        .game-title {
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e3c72 0%, #2b5a9c 40%, #1e3c72 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.3rem;
+            display: inline-block;
+            border-left: 6px solid var(--accent);
+            padding-left: 1rem;
+            text-shadow: none;
         }
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
+
+        .game-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-mid);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            padding-bottom: 0.6rem;
+            border-bottom: 2px dashed #b0c4de;
+        }
+
+        .badge {
+            background: #1e4668;
+            color: #fff;
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── Controls Bar ── */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.2rem;
+            background: #f5f8fd;
+            border-radius: 1.2rem;
+            box-shadow: 0 2px 8px var(--shadow-soft);
+            border: 1px solid #e8eef8;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-mid);
+            white-space: nowrap;
+        }
+
+        .disk-input {
+            width: 65px;
+            padding: 0.5rem 0.4rem;
+            border: 2px solid #c8d6e5;
+            border-radius: 10px;
             font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            color: #1e3c72;
+            background: #fff;
+            transition: all var(--transition-fast);
+            font-family: inherit;
         }
-        button:hover {
-            background: #2980b9;
+        .disk-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.12);
         }
-        .problems {
-            background: #fef9e6;
-            border-left: 4px solid #f39c12;
+
+        .disk-slider {
+            width: 100px;
+            accent-color: #f39c12;
+            cursor: pointer;
+            height: 6px;
+        }
+
+        .btn {
+            padding: 0.6rem 1.3rem;
+            border-radius: 2rem;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            transition: all var(--transition-fast);
+            font-family: inherit;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn-reset {
+            background: #fff;
+            color: #1e3c72;
+            border: 2px solid #c8d6e5;
+            box-shadow: 0 2px 6px var(--shadow-soft);
+        }
+        .btn-reset:hover {
+            border-color: #1e3c72;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            background: #f8fafd;
+        }
+        .btn-auto {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(243, 156, 18, 0.35);
+            border: 2px solid transparent;
+        }
+        .btn-auto:hover {
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5);
+            transform: translateY(-1px);
+        }
+        .btn-auto.cancelling {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 14px rgba(231, 76, 60, 0.35);
+            animation: subtlePulse 0.8s ease-in-out infinite;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(20%);
+        }
+
+        .move-counter-display {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #1e3c72;
+            background: #fff;
             padding: 0.5rem 1rem;
-            margin-top: 1.5rem;
+            border-radius: 2rem;
+            border: 2px solid #e0e8f5;
+            min-width: 90px;
+            text-align: center;
+            box-shadow: 0 2px 6px var(--shadow-soft);
         }
-        code {
-            background: #eee;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
+        .move-counter-display span {
+            color: #e67e22;
+            font-size: 1.3rem;
+        }
+
+        /* ── Warning Message ── */
+        .warning-area {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+        .warning-msg {
+            background: #fff3e0;
+            border-left: 5px solid #f39c12;
+            padding: 0.7rem 1.3rem;
+            border-radius: 0.8rem;
+            color: #8b5e00;
+            font-weight: 600;
+            font-size: 0.9rem;
+            animation: fadeInWarning 0.3s ease-out;
+            box-shadow: 0 3px 10px rgba(243, 156, 18, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .warning-msg.fading-out {
+            animation: fadeOutWarning 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeInWarning {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeOutWarning {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ── Victory Overlay ── */
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .victory-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .victory-banner {
+            background: linear-gradient(135deg, #1e3c72, #2b5a9c);
+            color: #f0c040;
+            padding: 1.5rem 2.5rem;
+            border-radius: 2rem;
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 60px rgba(240, 192, 64, 0.5);
+            animation: victoryBounce 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            letter-spacing: 1px;
+        }
+        .victory-banner .trophy {
+            font-size: 3rem;
+            display: block;
+            animation: glowWinPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes victoryBounce {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.08);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes glowWinPulse {
+            0%,
+            100% {
+                filter: drop-shadow(0 0 10px #f0c040);
+            }
+            50% {
+                filter: drop-shadow(0 0 30px #ffd700);
+            }
+        }
+
+        /* ── Game Scene ── */
+        .game-scene {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: flex-end;
+            perspective: var(--game-perspective);
+            -webkit-perspective: var(--game-perspective);
+            padding: 1rem 0 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ── Peg Column ── */
+        .peg-column {
+            flex: 1;
+            min-width: 140px;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+            padding: 0 0.5rem;
+        }
+        .peg-column:hover {
+            transform: translateY(-3px);
+        }
+        .peg-column.highlight-target {
+            transform: translateY(-2px);
+        }
+        .peg-column.highlight-target .peg-rod {
+            box-shadow: 0 0 22px 6px rgba(243, 156, 18, 0.55);
+        }
+        .peg-label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #4a627a;
+            margin-top: 0.6rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ── Peg Visual Assembly ── */
+        .peg-visual {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+        }
+
+        /* Rod (cylinder) */
+        .peg-rod {
+            width: var(--rod-width);
+            height: var(--rod-height);
+            background: linear-gradient(90deg,
+                    var(--rod-dark) 0%,
+                    var(--rod-mid) 18%,
+                    var(--rod-light) 35%,
+                    #e8d5c0 50%,
+                    var(--rod-light) 65%,
+                    var(--rod-mid) 82%,
+                    var(--rod-dark) 100%);
+            border-radius: 7px;
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            z-index: 1;
+            position: relative;
+            transition: box-shadow var(--transition-fast);
+        }
+        /* Rod top cap */
+        .peg-rod::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 10px;
+            background: radial-gradient(ellipse at center,
+                    #e8d5c0 0%,
+                    var(--rod-mid) 60%,
+                    var(--rod-dark) 100%);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Base platform */
+        .peg-base {
+            width: 85%;
+            max-width: 180px;
+            height: var(--base-height);
+            background: radial-gradient(ellipse at 50% 40%,
+                    var(--base-ellipse-light) 0%,
+                    #c49565 30%,
+                    var(--base-ellipse-dark) 70%,
+                    #5a3520 100%);
+            border-radius: 50%;
+            box-shadow:
+                0 6px 18px rgba(0, 0, 0, 0.35),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            z-index: 2;
+            position: relative;
+            margin-top: -3px;
+            transform: rotateX(8deg);
+            -webkit-transform: rotateX(8deg);
+        }
+
+        /* ── Disks Stack Area ── */
+        .disks-stack {
+            position: absolute;
+            bottom: calc(var(--base-height) - 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* ── Individual Disk ── */
+        .disk {
+            height: var(--disk-height);
+            border-radius: 13px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all var(--transition-smooth);
+            position: relative;
+            box-shadow:
+                0 4px 10px rgba(0, 0, 0, 0.25),
+                0 1px 2px rgba(0, 0, 0, 0.15),
+                inset 0 2px 0 rgba(255, 255, 255, 0.35),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            transform: translateZ(2px);
+            -webkit-transform: translateZ(2px);
+            will-change: transform, box-shadow, width;
+        }
+        .disk:hover {
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.35),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+            transform: translateZ(4px) scale(1.03);
+            -webkit-transform: translateZ(4px) scale(1.03);
+            filter: brightness(1.08);
+        }
+        .disk.selected {
+            animation: diskSelectedGlow 0.7s ease-in-out infinite;
+            box-shadow:
+                0 0 22px 8px rgba(255, 215, 0, 0.7),
+                0 6px 18px rgba(0, 0, 0, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.5) !important;
+            transform: translateZ(10px) scale(1.06);
+            -webkit-transform: translateZ(10px) scale(1.06);
+            z-index: 20 !important;
+            filter: brightness(1.2);
+        }
+        .disk.disk-moving {
+            animation: diskFloatUp 0.45s ease-out;
+        }
+        .disk.disk-placing {
+            animation: diskFloatDown 0.4s ease-in;
+        }
+        .disk.shake-warning {
+            animation: shakeWarning 0.5s ease-in-out;
+        }
+
+        /* Disk center hole illusion */
+        .disk::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes diskSelectedGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 22px 8px rgba(255, 215, 0, 0.7), 0 6px 18px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 35px 14px rgba(255, 215, 0, 0.95), 0 8px 22px rgba(0, 0, 0, 0.5);
+            }
+        }
+        @keyframes diskFloatUp {
+            0% {
+                transform: translateZ(2px) translateY(0);
+            }
+            50% {
+                transform: translateZ(18px) translateY(-28px);
+            }
+            100% {
+                transform: translateZ(2px) translateY(0);
+            }
+        }
+        @keyframes diskFloatDown {
+            0% {
+                transform: translateZ(10px) translateY(-10px);
+            }
+            100% {
+                transform: translateZ(2px) translateY(0);
+            }
+        }
+        @keyframes shakeWarning {
+            0%,
+            100% {
+                transform: translateZ(2px) translateX(0);
+            }
+            15% {
+                transform: translateZ(6px) translateX(-7px);
+            }
+            30% {
+                transform: translateZ(6px) translateX(7px);
+            }
+            45% {
+                transform: translateZ(4px) translateX(-5px);
+            }
+            60% {
+                transform: translateZ(4px) translateX(5px);
+            }
+            75% {
+                transform: translateZ(3px) translateX(-2px);
+            }
+            90% {
+                transform: translateZ(3px) translateX(2px);
+            }
+        }
+        @keyframes subtlePulse {
+            0%,
+            100% {
+                box-shadow: 0 4px 14px rgba(231, 76, 60, 0.35);
+            }
+            50% {
+                box-shadow: 0 4px 24px rgba(231, 76, 60, 0.65);
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 850px) {
+            :root {
+                --rod-height: 200px;
+                --rod-width: 10px;
+                --disk-height: 20px;
+                --base-height: 17px;
+                --game-perspective: 700px;
+            }
+            .game-scene {
+                gap: 0.6rem;
+            }
+            .peg-column {
+                min-width: 90px;
+                max-width: 200px;
+            }
+            .disk {
+                border-radius: 10px;
+            }
+        }
+        @media (max-width: 500px) {
+            :root {
+                --rod-height: 150px;
+                --rod-width: 8px;
+                --disk-height: 16px;
+                --base-height: 14px;
+                --game-perspective: 500px;
+            }
+            .app-wrapper {
+                padding: 1rem 0.6rem 1.5rem;
+                border-radius: 1.2rem;
+            }
+            .game-scene {
+                gap: 0.3rem;
+            }
+            .peg-column {
+                min-width: 60px;
+                max-width: 130px;
+            }
+            .disk {
+                border-radius: 8px;
+            }
+            .disk::after {
+                width: 10px;
+                height: 5px;
+            }
+            .btn {
+                padding: 0.45rem 0.9rem;
+                font-size: 0.78rem;
+            }
+            .controls-bar {
+                gap: 0.4rem;
+                padding: 0.7rem 0.6rem;
+            }
+            .disk-input {
+                width: 48px;
+                font-size: 0.85rem;
+            }
+            .disk-slider {
+                width: 60px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>📐 二次方程求解器 (ax² + bx + c = 0)</h1>
-    <p>点击下方按钮，依次输入系数 a, b, c（假设 a > 0 且 Δ ≥ 0）。</p >
-    <button id="solveBtn">🔢 开始求解</button>
 
-    <div id="resultArea" class="result" style="display:none;">
-        <strong>📌 结果 (来自 alert 和 console.log)：</strong>
-        <div id="resultContent"></div>
+    <div class="app-wrapper">
+        <!-- ── Header ── -->
+        <header class="game-header">
+            <h1 class="game-title">🏯 Tower of Hanoi · 3D</h1>
+            <div class="game-subtitle">
+                <span>📘 Web Design Course</span>
+                <span class="badge">🎯 Ages 8–14 | 3D Puzzle</span>
+            </div>
+        </header>
+
+        <!-- ── Controls ── -->
+        <div class="controls-bar" id="controlsBar">
+            <div class="control-group">
+                <label class="control-label" for="diskCountInput">🪩 Disks:</label>
+                <input type="number" id="diskCountInput" class="disk-input" value="4" min="3" max="8" title="Number of disks (3–8)">
+                <input type="range" id="diskCountSlider" class="disk-slider" value="4" min="3" max="8" title="Slide to change disk count">
+            </div>
+            <div class="move-counter-display">
+                Moves: <span id="moveCounter">0</span>
+            </div>
+            <button class="btn btn-reset" id="btnReset" title="Reset current game">🔄 Reset</button>
+            <button class="btn btn-auto" id="btnAutoSolve" title="Auto-solve step by step">🤖 Auto Solve</button>
+        </div>
+
+        <!-- ── Warning Area ── -->
+        <div class="warning-area" id="warningArea"></div>
+
+        <!-- ── Game Scene ── -->
+        <div class="game-scene" id="gameScene">
+            <!-- Peg A -->
+            <div class="peg-column" data-peg-index="0" id="pegCol0">
+                <div class="peg-visual">
+                    <div class="disks-stack" id="disksStack0"></div>
+                    <div class="peg-rod"></div>
+                    <div class="peg-base"></div>
+                </div>
+                <span class="peg-label">Peg A</span>
+            </div>
+            <!-- Peg B -->
+            <div class="peg-column" data-peg-index="1" id="pegCol1">
+                <div class="peg-visual">
+                    <div class="disks-stack" id="disksStack1"></div>
+                    <div class="peg-rod"></div>
+                    <div class="peg-base"></div>
+                </div>
+                <span class="peg-label">Peg B</span>
+            </div>
+            <!-- Peg C -->
+            <div class="peg-column" data-peg-index="2" id="pegCol2">
+                <div class="peg-visual">
+                    <div class="disks-stack" id="disksStack2"></div>
+                    <div class="peg-rod"></div>
+                    <div class="peg-base"></div>
+                </div>
+                <span class="peg-label">Peg C</span>
+            </div>
+        </div>
+
+        <!-- ── Victory Overlay ── -->
+        <div class="victory-overlay" id="victoryOverlay">
+            <div class="victory-banner">
+                <span class="trophy">🏆</span>
+                <span id="victoryText">You Solved It!</span>
+            </div>
+        </div>
     </div>
 
-    <div class="problems">
-        <strong>⚠️ 测试中发现的问题及分析：</strong>
-        <ul>
-            <li><strong>输入非数值</strong>：<code>parseFloat</code> 会将无效输入转为 <code>NaN</code>，导致计算结果为 <code>NaN</code> 或出错。建议增加输入验证。</li>
-            <li><strong>a = 0 的情况</strong>：题目假设 a > 0，但如果用户输入 0，公式除以 2*a 会得到无穷大或无效。实际应处理一次方程情况。</li>
-            <li><strong>Δ < 0 的情况</strong>：题目假设 Δ ≥ 0，但用户可能输入导致 Δ 为负，<code>Math.sqrt</code> 会返回 <code>NaN</code>。应提示无实数根。</li>
-            <li><strong>用户取消输入</strong>：点击 prompt 的“取消”会返回 <code>null</code>，<code>parseFloat(null)</code> 得到 <code>NaN</code>，导致程序异常。</li>
-            <li><strong>浮点数精度</strong>：计算结果可能包含很长的小数，可适当使用 <code>.toFixed()</code> 保留精度。</li>
-            <li><strong>重复运行</strong>：页面刷新或再次点击按钮即可重新输入测试，但多次弹出提示框体验略差。</li>
-        </ul>
-        <p><strong>改进建议</strong>：使用 <code>&lt;input&gt;</code> 配合表单验证，实时处理异常情况。</p >
-    </div>
-</div>
+    <script>
+        (function() {
+            // ──────────────────────────────────────────────
+            //  HanoiGame Class — Object-Oriented Game Engine
+            // ──────────────────────────────────────────────
+            class HanoiGame {
+                constructor() {
+                    // DOM references
+                    this.diskCountInput = document.getElementById('diskCountInput');
+                    this.diskCountSlider = document.getElementById('diskCountSlider');
+                    this.moveCounterEl = document.getElementById('moveCounter');
+                    this.warningArea = document.getElementById('warningArea');
+                    this.btnReset = document.getElementById('btnReset');
+                    this.btnAutoSolve = document.getElementById('btnAutoSolve');
+                    this.victoryOverlay = document.getElementById('victoryOverlay');
+                    this.victoryText = document.getElementById('victoryText');
+                    this.gameScene = document.getElementById('gameScene');
+                    this.pegColumns = [
+                        document.getElementById('pegCol0'),
+                        document.getElementById('pegCol1'),
+                        document.getElementById('pegCol2'),
+                    ];
+                    this.disksStackEls = [
+                        document.getElementById('disksStack0'),
+                        document.getElementById('disksStack1'),
+                        document.getElementById('disksStack2'),
+                    ];
 
-<script>
-    // 二次方程求解函数（假设 a>0, delta>=0，但为健壮性增加了基本检查）
-    function solveQuadratic() {
-        // 1. 获取用户输入
-        let aInput = prompt("请输入系数 a (a > 0):", "1");
-        let bInput = prompt("请输入系数 b:", "0");
-        let cInput = prompt("请输入系数 c:", "0");
+                    // ── Game State (using arrays & objects as required) ──
+                    /** @type {{ disksCount: number, pegs: number[][], moves: number, isAutoSolving: boolean, selectedPegIndex: number|null, selectedDiskSize: number|null, autoSolveCancelFlag: boolean, hasWon: boolean, initialPegsSnapshot: number[][] }} */
+                    this.state = {
+                        disksCount: 4,
+                        pegs: [
+                            [],
+                            [],
+                            []
+                        ], // pegs[0]=A, pegs[1]=B, pegs[2]=C — each is a stack (array), last element = top disk
+                        moves: 0,
+                        isAutoSolving: false,
+                        selectedPegIndex: null,
+                        selectedDiskSize: null,
+                        autoSolveCancelFlag: false,
+                        hasWon: false,
+                        initialPegsSnapshot: [
+                            [],
+                            [],
+                            []
+                        ],
+                    };
 
-        // 2. 转换为数字
-        let a = parseFloat(aInput);
-        let b = parseFloat(bInput);
-        let c = parseFloat(cInput);
+                    // Disk colors: index = diskSize-1 (size 1..8)
+                    this.diskColorPalette = [
+                        { main: '#e74c3c', light: '#f07070', dark: '#b53030' }, // size 1 — smallest, red-pink
+                        { main: '#e67e22', light: '#f0a050', dark: '#b86018' }, // size 2 — orange
+                        { main: '#f1c40f', light: '#f7dc50', dark: '#c09d0a' }, // size 3 — yellow
+                        { main: '#2ecc71', light: '#58e890', dark: '#209a50' }, // size 4 — green
+                        { main: '#1abc9c', light: '#40d8b8', dark: '#148f78' }, // size 5 — teal
+                        { main: '#3498db', light: '#60b8f0', dark: '#2078b0' }, // size 6 — blue
+                        { main: '#9b59b6', light: '#b880d0', dark: '#784098' }, // size 7 — purple
+                        { main: '#e91e63', light: '#f05088', dark: '#b81548' }, // size 8 — deep pink
+                    ];
 
-        // 辅助：检查是否有效数字
-        if (isNaN(a) || isNaN(b) || isNaN(c)) {
-            let errMsg = "输入无效！请确保输入的是数字。";
-            alert(errMsg);
-            console.error(errMsg);
-            document.getElementById("resultContent").innerText = errMsg;
-            document.getElementById("resultArea").style.display = "block";
-            return;
-        }
+                    // Bind methods
+                    this.onPegClick = this.onPegClick.bind(this);
+                    this.onDiskCountChange = this.onDiskCountChange.bind(this);
+                    this.onReset = this.onReset.bind(this);
+                    this.onAutoSolve = this.onAutoSolve.bind(this);
 
-        // 处理 a=0 的情况（虽然题目假设 a>0，但实际测试会遇到）
-        if (a === 0) {
-            let msg = "这不是二次方程（a=0）。一次方程的解为 x = " + (-c / b);
-            if (b === 0) {
-                msg = c === 0 ? "方程恒成立（任意 x）" : "方程无解";
+                    // Initialize
+                    this.init();
+                }
+
+                // ── Initialize / Reset State ──
+                init() {
+                    const count = parseInt(this.diskCountInput.value) || 4;
+                    const clamped = Math.max(3, Math.min(8, count));
+                    this.state.disksCount = clamped;
+                    this.diskCountInput.value = clamped;
+                    this.diskCountSlider.value = clamped;
+                    this.resetState();
+                    this.attachEvents();
+                    this.render();
+                    this.clearWarning();
+                    this.hideVictory();
+                    this.state.hasWon = false;
+                    this.state.isAutoSolving = false;
+                    this.state.autoSolveCancelFlag = false;
+                    this.btnAutoSolve.textContent = '🤖 Auto Solve';
+                    this.btnAutoSolve.classList.remove('cancelling');
+                    this.enableControls(true);
+                }
+
+                resetState() {
+                    const n = this.state.disksCount;
+                    // Peg A gets all disks: sizes n..1 (largest at bottom = index 0, smallest on top = last)
+                    // Use Array.from + reversing for clarity, but also demonstrate push()
+                    const pegA = [];
+                    for (let i = n; i >= 1; i--) {
+                        pegA.push(i); // push() — adds to top of stack
+                    }
+                    this.state.pegs = [pegA, [], []];
+                    this.state.moves = 0;
+                    this.state.selectedPegIndex = null;
+                    this.state.selectedDiskSize = null;
+                    this.state.hasWon = false;
+                    this.state.autoSolveCancelFlag = false;
+                    this.state.isAutoSolving = false;
+                    // Snapshot for reset (using slice() to clone)
+                    this.state.initialPegsSnapshot = this.state.pegs.map(peg => peg.slice());
+                    this.updateMoveCounter();
+                }
+
+                // ── Attach Event Listeners ──
+                attachEvents() {
+                    // Remove old listeners by cloning nodes (simple approach)
+                    this.pegColumns.forEach((col, idx) => {
+                        const newCol = col.cloneNode(true);
+                        col.parentNode.replaceChild(newCol, col);
+                        this.pegColumns[idx] = newCol;
+                        this.disksStackEls[idx] = newCol.querySelector('.disks-stack');
+                        newCol.addEventListener('click', (e) => this.onPegClick(idx, e));
+                    });
+
+                    this.diskCountInput.addEventListener('change', this.onDiskCountChange);
+                    this.diskCountSlider.addEventListener('input', (e) => {
+                        this.diskCountInput.value = e.target.value;
+                        this.onDiskCountChange();
+                    });
+                    this.diskCountInput.addEventListener('input', (e) => {
+                        const val = parseInt(e.target.value);
+                        if (val >= 3 && val <= 8) {
+                            this.diskCountSlider.value = val;
+                        }
+                    });
+                    this.btnReset.addEventListener('click', this.onReset);
+                    this.btnAutoSolve.addEventListener('click', this.onAutoSolve);
+
+                    // Keyboard shortcut: Escape to cancel auto-solve
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape' && this.state.isAutoSolving) {
+                            this.cancelAutoSolve();
+                        }
+                    });
+                }
+
+                // ── Event: Disk Count Change ──
+                onDiskCountChange() {
+                    if (this.state.isAutoSolving) {
+                        this.cancelAutoSolve();
+                    }
+                    let val = parseInt(this.diskCountInput.value);
+                    if (isNaN(val) || val < 3) val = 3;
+                    if (val > 8) val = 8;
+                    this.diskCountInput.value = val;
+                    this.diskCountSlider.value = val;
+                    this.state.disksCount = val;
+                    this.resetState();
+                    this.state.hasWon = false;
+                    this.hideVictory();
+                    this.render();
+                    this.clearWarning();
+                    this.enableControls(true);
+                    this.btnAutoSolve.textContent = '🤖 Auto Solve';
+                    this.btnAutoSolve.classList.remove('cancelling');
+                }
+
+                // ── Event: Reset Button ──
+                onReset() {
+                    if (this.state.isAutoSolving) {
+                        this.cancelAutoSolve();
+                    }
+                    // Restore from snapshot using slice()
+                    this.state.pegs = this.state.initialPegsSnapshot.map(peg => peg.slice());
+                    this.state.moves = 0;
+                    this.state.selectedPegIndex = null;
+                    this.state.selectedDiskSize = null;
+                    this.state.hasWon = false;
+                    this.state.isAutoSolving = false;
+                    this.state.autoSolveCancelFlag = false;
+                    this.updateMoveCounter();
+                    this.render();
+                    this.clearWarning();
+                    this.hideVictory();
+                    this.enableControls(true);
+                    this.btnAutoSolve.textContent = '🤖 Auto Solve';
+                    this.btnAutoSolve.classList.remove('cancelling');
+                }
+
+                // ── Event: Peg Click (select / place) ──
+                onPegClick(pegIndex, event) {
+                    if (this.state.isAutoSolving) return; // FR-08: disable during auto-solve
+                    if (this.state.hasWon) return; // game over
+
+                    // If clicking a disk directly, ensure we target the peg correctly
+                    const target = event.target;
+                    if (target.classList.contains('disk') && !target.classList.contains('selected')) {
+                        // Clicked a non-selected disk — check if it's the top disk of its peg
+                        const topDiskSize = this.getTopDiskSize(pegIndex);
+                        const clickedSize = parseInt(target.dataset.diskSize);
+                        if (clickedSize !== topDiskSize && topDiskSize !== null) {
+                            // Clicked a non-top disk — treat as peg click for the peg
+                        }
+                    }
+
+                    if (this.state.selectedPegIndex === null) {
+                        // No disk selected → try to select top disk from this peg
+                        const topSize = this.getTopDiskSize(pegIndex);
+                        if (topSize !== null) {
+                            this.state.selectedPegIndex = pegIndex;
+                            this.state.selectedDiskSize = topSize;
+                            this.render();
+                            this.clearWarning();
+                        }
+                    } else if (this.state.selectedPegIndex === pegIndex) {
+                        // Clicking same peg → deselect
+                        this.state.selectedPegIndex = null;
+                        this.state.selectedDiskSize = null;
+                        this.render();
+                        this.clearWarning();
+                    } else {
+                        // Attempt to move selected disk to this peg
+                        const fromIdx = this.state.selectedPegIndex;
+                        const toIdx = pegIndex;
+                        const diskSize = this.state.selectedDiskSize;
+
+                        if (this.isValidMove(fromIdx, toIdx, diskSize)) {
+                            this.executeMove(fromIdx, toIdx);
+                            this.state.selectedPegIndex = null;
+                            this.state.selectedDiskSize = null;
+                            this.state.moves++;
+                            this.updateMoveCounter();
+                            this.render();
+                            this.clearWarning();
+                            // Check win
+                            if (this.checkWin()) {
+                                this.onWin();
+                            }
+                        } else {
+                            // Invalid move → warn
+                            this.showWarning('⚠️ Cannot place a larger disk on a smaller one!');
+                            this.state.selectedPegIndex = null;
+                            this.state.selectedDiskSize = null;
+                            // Shake the target peg's top disk
+                            this.render();
+                            this.shakeTargetPeg(toIdx);
+                        }
+                    }
+                }
+
+                // ── Shake animation on target peg ──
+                shakeTargetPeg(pegIndex) {
+                    const stackEl = this.disksStackEls[pegIndex];
+                    const topDiskEl = stackEl.querySelector('.disk:last-child');
+                    if (topDiskEl) {
+                        topDiskEl.classList.add('shake-warning');
+                        topDiskEl.addEventListener('animationend', () => {
+                            topDiskEl.classList.remove('shake-warning');
+                        }, { once: true });
+                    }
+                }
+
+                // ── Get top disk size of a peg ──
+                getTopDiskSize(pegIndex) {
+                    const peg = this.state.pegs[pegIndex];
+                    if (peg.length === 0) return null;
+                    return peg[peg.length - 1]; // top = last element
+                }
+
+                // ── Validate move ──
+                isValidMove(fromIdx, toIdx, diskSize) {
+                    const toPeg = this.state.pegs[toIdx];
+                    if (toPeg.length === 0) return true; // empty peg always valid
+                    const topOfTarget = toPeg[toPeg.length - 1];
+                    return diskSize < topOfTarget; // smaller disk can go on larger
+                }
+
+                // ── Execute move using push() & pop() ──
+                executeMove(fromIdx, toIdx) {
+                    const disk = this.state.pegs[fromIdx].pop(); // pop() removes top
+                    this.state.pegs[toIdx].push(disk); // push() adds to top
+                }
+
+                // ── Check win: all disks on Peg C (index 2) ──
+                checkWin() {
+                    return this.state.pegs[2].length === this.state.disksCount;
+                }
+
+                // ── Win handler ──
+                onWin() {
+                    this.state.hasWon = true;
+                    this.state.selectedPegIndex = null;
+                    this.state.selectedDiskSize = null;
+                    this.victoryText.textContent =
+                        `🎉 Solved in ${this.state.moves} moves! (Minimum: ${Math.pow(2, this.state.disksCount) - 1})`;
+                    this.showVictory();
+                    this.enableControls(false);
+                    // Re-enable reset & disk count change
+                    this.btnReset.disabled = false;
+                    this.diskCountInput.disabled = false;
+                    this.diskCountSlider.disabled = false;
+                    this.btnAutoSolve.disabled = true;
+                }
+
+                // ── Update move counter display ──
+                updateMoveCounter() {
+                    this.moveCounterEl.textContent = this.state.moves;
+                }
+
+                // ── Warning message ──
+                showWarning(msg) {
+                    this.warningArea.innerHTML = `<div class="warning-msg">${msg}</div>`;
+                    const msgEl = this.warningArea.querySelector('.warning-msg');
+                    // Auto-fade after 2.5s
+                    setTimeout(() => {
+                        if (msgEl && msgEl.parentNode) {
+                            msgEl.classList.add('fading-out');
+                            msgEl.addEventListener('animationend', () => {
+                                if (msgEl.parentNode) msgEl.parentNode.innerHTML = '';
+                            }, { once: true });
+                        }
+                    }, 2500);
+                }
+                clearWarning() {
+                    this.warningArea.innerHTML = '';
+                }
+
+                // ── Victory overlay ──
+                showVictory() {
+                    this.victoryOverlay.classList.add('active');
+                    // Auto-hide after 6s or on click
+                    const hideHandler = () => {
+                        this.hideVictory();
+                        this.victoryOverlay.removeEventListener('click', hideHandler);
+                    };
+                    this.victoryOverlay.addEventListener('click', hideHandler);
+                    setTimeout(hideHandler, 6000);
+                }
+                hideVictory() {
+                    this.victoryOverlay.classList.remove('active');
+                }
+
+                // ── Enable/disable controls ──
+                enableControls(enabled) {
+                    this.btnReset.disabled = !enabled;
+                    this.btnAutoSolve.disabled = !enabled;
+                    this.diskCountInput.disabled = !enabled;
+                    this.diskCountSlider.disabled = !enabled;
+                    if (!enabled) {
+                        // Keep reset somewhat available during auto-solve
+                        this.btnReset.disabled = false;
+                        this.diskCountInput.disabled = false;
+                        this.diskCountSlider.disabled = false;
+                    }
+                    // During auto-solve, only allow reset/cancel
+                    if (this.state.isAutoSolving && enabled === false) {
+                        this.btnReset.disabled = false;
+                    }
+                }
+
+                // ── Auto Solve ──
+                onAutoSolve() {
+                    if (this.state.isAutoSolving) {
+                        // Cancel
+                        this.cancelAutoSolve();
+                        return;
+                    }
+                    if (this.state.hasWon) return;
+
+                    // Reset game first to start fresh for auto-solve
+                    this.state.pegs = this.state.initialPegsSnapshot.map(peg => peg.slice());
+                    this.state.moves = 0;
+                    this.state.selectedPegIndex = null;
+                    this.state.selectedDiskSize = null;
+                    this.state.hasWon = false;
+                    this.state.isAutoSolving = true;
+                    this.state.autoSolveCancelFlag = false;
+                    this.updateMoveCounter();
+                    this.render();
+                    this.clearWarning();
+                    this.hideVictory();
+
+                    // Disable most controls
+                    this.btnAutoSolve.textContent = '⏹ Cancel';
+                    this.btnAutoSolve.classList.add('cancelling');
+                    this.btnAutoSolve.disabled = false;
+                    this.diskCountInput.disabled = true;
+                    this.diskCountSlider.disabled = true;
+
+                    // Generate move sequence using recursive algorithm
+                    const moveSequence = [];
+                    this.generateAutoSolveMoves(
+                        this.state.disksCount,
+                        0, // from peg A
+                        2, // to peg C
+                        1, // auxiliary peg B
+                        moveSequence
+                    );
+
+                    // Execute moves with delay using setTimeout chain
+                    this.executeAutoSolveSequence(moveSequence, 0);
+                }
+
+                cancelAutoSolve() {
+                    this.state.autoSolveCancelFlag = true;
+                    this.state.isAutoSolving = false;
+                    this.btnAutoSolve.textContent = '🤖 Auto Solve';
+                    this.btnAutoSolve.classList.remove('cancelling');
+                    this.enableControls(true);
+                    this.state.selectedPegIndex = null;
+                    this.state.selectedDiskSize = null;
+                    this.render();
+                    this.clearWarning();
+                }
+
+                // Recursive Hanoi solver — generates move sequence
+                generateAutoSolveMoves(n, from, to, aux, movesAccumulator) {
+                    if (n === 0) return;
+                    this.generateAutoSolveMoves(n - 1, from, aux, to, movesAccumulator);
+                    movesAccumulator.push({ from, to }); // store move
+                    this.generateAutoSolveMoves(n - 1, aux, to, from, movesAccumulator);
+                }
+
+                // Execute move sequence step by step
+                executeAutoSolveSequence(sequence, index) {
+                    if (this.state.autoSolveCancelFlag) {
+                        this.cancelAutoSolve();
+                        return;
+                    }
+                    if (index >= sequence.length) {
+                        // Done
+                        this.state.isAutoSolving = false;
+                        this.btnAutoSolve.textContent = '🤖 Auto Solve';
+                        this.btnAutoSolve.classList.remove('cancelling');
+                        this.enableControls(true);
+                        if (this.checkWin()) {
+                            this.onWin();
+                        }
+                        return;
+                    }
+
+                    const move = sequence[index];
+                    const { from, to } = move;
+
+                    // Validate & execute
+                    const diskSize = this.getTopDiskSize(from);
+                    if (diskSize !== null && this.isValidMove(from, to, diskSize)) {
+                        this.executeMove(from, to);
+                        this.state.moves++;
+                        this.updateMoveCounter();
+                        this.render();
+                        // Brief highlight on the target peg
+                        this.flashPegHighlight(to);
+                    }
+
+                    // Schedule next move
+                    const delay = 550 + Math.random() * 150; // ~550-700ms
+                    setTimeout(() => {
+                        this.executeAutoSolveSequence(sequence, index + 1);
+                    }, delay);
+                }
+
+                flashPegHighlight(pegIndex) {
+                    const col = this.pegColumns[pegIndex];
+                    col.classList.add('highlight-target');
+                    setTimeout(() => col.classList.remove('highlight-target'), 400);
+                }
+
+                // ── Render All ──
+                render() {
+                    // Use forEach() to iterate over pegs and render disks
+                    this.state.pegs.forEach((peg, pegIndex) => {
+                        this.renderPeg(pegIndex, peg);
+                    });
+                    // Update peg column visual states
+                    this.pegColumns.forEach((col, idx) => {
+                        if (this.state.selectedPegIndex === idx) {
+                            col.classList.add('has-selected');
+                        } else {
+                            col.classList.remove('has-selected');
+                        }
+                    });
+                }
+
+                renderPeg(pegIndex, pegArray) {
+                    const stackEl = this.disksStackEls[pegIndex];
+                    stackEl.innerHTML = ''; // Clear
+
+                    // Use forEach() to create disk elements — required array method
+                    pegArray.forEach((diskSize, positionIndex) => {
+                        const diskEl = document.createElement('div');
+                        diskEl.classList.add('disk');
+                        diskEl.dataset.diskSize = diskSize;
+                        diskEl.dataset.pegIndex = pegIndex;
+                        diskEl.dataset.position = positionIndex;
+
+                        // Calculate width based on disk size (1=smallest, 8=largest)
+                        const maxDisks = this.state.disksCount;
+                        const minWidthPct = 28;
+                        const maxWidthPct = 88;
+                        const widthPct = minWidthPct + ((diskSize - 1) / (maxDisks - 1 || 1)) * (maxWidthPct -
+                            minWidthPct);
+                        diskEl.style.width = widthPct + '%';
+
+                        // Apply color from palette (diskSize 1-based)
+                        const colorIdx = (diskSize - 1) % this.diskColorPalette.length;
+                        const colors = this.diskColorPalette[colorIdx];
+                        diskEl.style.background = `
+                            linear-gradient(180deg,
+                                ${colors.light} 0%,
+                                ${colors.main} 35%,
+                                ${colors.dark} 100%)
+                        `;
+                        // Custom property for potential glow
+                        diskEl.style.setProperty('--disk-glow-color', colors.light);
+
+                        // Check if this disk is selected
+                        if (
+                            this.state.selectedPegIndex === pegIndex &&
+                            diskSize === this.state.selectedDiskSize &&
+                            positionIndex === pegArray.length - 1 // is top disk
+                        ) {
+                            diskEl.classList.add('selected');
+                        }
+
+                        // Click on disk itself also triggers peg click logic
+                        diskEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (this.state.isAutoSolving || this.state.hasWon) return;
+                            // Determine if this is the top disk
+                            const topSize = this.getTopDiskSize(pegIndex);
+                            if (diskSize === topSize) {
+                                // Act as peg click
+                                this.onPegClick(pegIndex, e);
+                            }
+                        });
+
+                        stackEl.appendChild(diskEl);
+                    });
+                }
+
+                // ── Destroy / Cleanup (if needed) ──
+                destroy() {
+                    // Remove event listeners (if dynamically managed)
+                    document.removeEventListener('keydown', this._boundKeyHandler);
+                }
             }
-            alert(msg);
-            console.log(msg);
-            document.getElementById("resultContent").innerText = msg;
-            document.getElementById("resultArea").style.display = "block";
-            return;
-        }
 
-        // 3. 计算判别式
-        let delta = b * b - 4 * a * c;
-        
-        // 处理 delta < 0（虽然题目假设≥0，但用户可能输入）
-        if (delta < 0) {
-            let msg = "判别式 Δ < 0，方程无实数根。";
-            alert(msg);
-            console.log(msg);
-            document.getElementById("resultContent").innerText = msg;
-            document.getElementById("resultArea").style.display = "block";
-            return;
-        }
-
-        // 4. 计算两个根
-        let sqrtDelta = Math.sqrt(delta);
-        let x1 = (-b + sqrtDelta) / (2 * a);
-        let x2 = (-b - sqrtDelta) / (2 * a);
-
-        // 格式化结果（保留6位小数，避免过长）
-        let resultMsg = `方程 ${a}x² + ${b}x + ${c} = 0 的解：\n`;
-        resultMsg += `x₁ = ${x1.toFixed(6)}\n`;
-        resultMsg += `x₂ = ${x2.toFixed(6)}`;
-        
-        // 5. 使用 alert 告知用户
-        alert(resultMsg);
-        
-        // 6. 使用 console.log 输出相同结果
-        console.log(resultMsg);
-        console.log(`原始值：x₁ = ${x1}, x₂ = ${x2}`);
-        
-        // 同时在页面上显示结果（方便查看）
-        document.getElementById("resultContent").innerHTML = resultMsg.replace(/\n/g, "<br>");
-        document.getElementById("resultArea").style.display = "block";
-    }
-
-    // 绑定按钮点击事件，也可以直接页面加载时自动调用，但为符合“多次测试”，按钮方式更灵活
-    document.getElementById("solveBtn").addEventListener("click", solveQuadratic);
-    
-    // 可选：页面加载时自动执行一次（按题目要求可以直接运行，但按钮方式也符合多次测试）
-    // 如需首次自动执行，取消下一行注释：
-    // window.onload = solveQuadratic;
-</script>
+            // ── Boot the game ──
+            document.addEventListener('DOMContentLoaded', () => {
+                const game = new HanoiGame();
+                // Expose for debugging (optional)
+                window.__hanoiGame = game;
+            });
+        })();
+    </script>
 </body>
 </html>
